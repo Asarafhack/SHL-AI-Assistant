@@ -1,25 +1,19 @@
 def needs_clarification(message: str):
 
-    message = message.lower()
+    message = message.lower().strip()
 
     vague_queries = [
 
         "assessment",
         "test",
-        "developer",
-        "engineer",
-        "manager",
-        "hiring"
+        "need assessment",
+        "need a test",
+        "i need an assessment",
+        "recommend assessment"
     ]
 
-    short_query = len(
-        message.split()
-    ) < 5
-
-    for word in vague_queries:
-
-        if word in message and short_query:
-            return True
+    if message in vague_queries:
+        return True
 
     return False
 
