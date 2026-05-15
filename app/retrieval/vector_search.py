@@ -1,68 +1,47 @@
-import json
 import pickle
-import os
-
 import faiss
 import numpy as np
 
+from sentence_transformers import SentenceTransformer
 
+
+model = None
 index = None
 metadata = None
 
 
 def load_resources():
 
+    global model
     global index
     global metadata
+
+    if model is None:
+
+        print("Loading embedding model...")
+
+        model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2"
+        )
 
     if index is None:
 
         print("Loading FAISS index...")
 
-        index_path = os.path.join(
-            "embeddings",
-            "faiss.index"
-        )
-
         index = faiss.read_index(
-            index_path
+            "embeddings/faiss.index"
         )
 
     if metadata is None:
 
         print("Loading metadata...")
 
-        metadata_path = os.path.join(
-            "embeddings",
-            "metadata.pkl"
-        )
-
         with open(
-            metadata_path,
+            "embeddings/metadata.pkl",
             "rb"
         ) as f:
 
             metadata = pickle.load(f)
-
-
-def simple_text_score(
-    query,
-    text
-):
-
-    query_words = set(
-        query.lower().split()
-    )
-
-    text_words = set(
-        text.lower().split()
-    )
-
-    common = query_words.intersection(
-        text_words
-    )
-
-    return len(common)
 
 
 def search_assessments(
@@ -72,36 +51,30 @@ def search_assessments(
 
     load_resources()
 
-    scored_results = []
+    query_embedding = model.encode(
+        [query]
+    )
 
-    for item in metadata:
+    query_embedding = np.array(
+        query_embedding
+    ).astype("float32")
 
-        searchable_text = " ".join([
-            item.get("name", ""),
-            item.get("description", ""),
-            item.get("test_type", "")
-        ])
-
-        score = simple_text_score(
-            query,
-            searchable_text
-        )
-
-        scored_results.append(
-            (score, item)
-        )
-
-    scored_results.sort(
-        key=lambda x: x[0],
-        reverse=True
+    distances, indices = index.search(
+        query_embedding,
+        top_k
     )
 
     results = []
 
-    for score, item in scored_results[:top_k]:
+    for idx in indices[0]:
 
-        if score > 0:
+        if (
+            idx >= 0
+            and idx < len(metadata)
+        ):
 
-            results.append(item)
+            results.append(
+                metadata[idx]
+            )
 
     return results
