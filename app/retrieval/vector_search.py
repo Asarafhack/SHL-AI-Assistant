@@ -1,26 +1,62 @@
 import json
+import pickle
 import faiss
-import numpy as np
+
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
 
-with open("data/shl_catalog.json", "r", encoding="utf-8") as f:
-    catalog = json.load(f)
+model = None
+index = None
+metadata = None
 
-index = faiss.read_index("embeddings/faiss.index")
 
-texts = [
-    f"{item['name']} {item['description']} {' '.join(item.get('skills', []))}"
-    for item in catalog
-]
+def load_resources():
 
-def search_assessments(query, top_k=5):
+    global model
+    global index
+    global metadata
 
-    query_embedding = model.encode([query])
+    if model is None:
+
+        print("Loading embedding model...")
+
+        model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+    if index is None:
+
+        print("Loading FAISS index...")
+
+        index = faiss.read_index(
+            "embeddings/faiss.index"
+        )
+
+    if metadata is None:
+
+        print("Loading metadata...")
+
+        with open(
+            "embeddings/metadata.pkl",
+            "rb"
+        ) as f:
+
+            metadata = pickle.load(f)
+
+
+def search_assessments(
+    query,
+    top_k=5
+):
+
+    load_resources()
+
+    query_embedding = model.encode(
+        [query]
+    )
 
     distances, indices = index.search(
-        np.array(query_embedding).astype("float32"),
+        query_embedding,
         top_k
     )
 
@@ -28,9 +64,10 @@ def search_assessments(query, top_k=5):
 
     for idx in indices[0]:
 
-        if idx >= len(catalog):
-            continue
+        if idx < len(metadata):
 
-        results.append(catalog[idx])
+            results.append(
+                metadata[idx]
+            )
 
     return results
