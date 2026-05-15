@@ -1,80 +1,99 @@
-import pickle
-import faiss
-import numpy as np
-
-from sentence_transformers import SentenceTransformer
+import json
 
 
-model = None
-index = None
-metadata = None
+# LOAD SHL CATALOG
+
+with open("data/shl_catalog.json", "r", encoding="utf-8") as f:
+    catalog = json.load(f)
 
 
-def load_resources():
+def search_assessments(query, top_k=5):
 
-    global model
-    global index
-    global metadata
+    query = query.lower().strip()
 
-    if model is None:
+    scored_results = []
 
-        print("Loading embedding model...")
+    for item in catalog:
 
-        model = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2"
-        )
+        name = item.get("name", "")
+        test_type = item.get("test_type", "")
+        description = item.get("description", "")
 
-    if index is None:
+        searchable_text = (
+            f"{name} "
+            f"{test_type} "
+            f"{description}"
+        ).lower()
 
-        print("Loading FAISS index...")
+        score = 0
 
-        index = faiss.read_index(
-            "embeddings/faiss.index"
-        )
+        # SIMPLE KEYWORD MATCHING
 
-    if metadata is None:
+        for word in query.split():
 
-        print("Loading metadata...")
+            if word in searchable_text:
+                score += 1
 
-        with open(
-            "embeddings/metadata.pkl",
-            "rb"
-        ) as f:
+        # EXTRA BOOSTS
 
-            metadata = pickle.load(f)
-
-
-def search_assessments(
-    query,
-    top_k=5
-):
-
-    load_resources()
-
-    query_embedding = model.encode(
-        [query]
-    )
-
-    query_embedding = np.array(
-        query_embedding
-    ).astype("float32")
-
-    distances, indices = index.search(
-        query_embedding,
-        top_k
-    )
-
-    results = []
-
-    for idx in indices[0]:
-
-        if (
-            idx >= 0
-            and idx < len(metadata)
+        if "java" in query and (
+            "technical" in test_type.lower()
+            or "developer" in searchable_text
         ):
+            score += 3
 
-            results.append(
-                metadata[idx]
-            )
+        if "personality" in query and (
+            "personality" in test_type.lower()
+        ):
+            score += 5
 
-    return results
+        if "communication" in query and (
+            "communication" in searchable_text
+            or "behavioral" in test_type.lower()
+        ):
+            score += 4
+
+        if "leadership" in query and (
+            "leadership" in searchable_text
+            or "behavioral" in test_type.lower()
+        ):
+            score += 4
+
+        if "cognitive" in query and (
+            "cognitive" in test_type.lower()
+        ):
+            score += 4
+
+        if score > 0:
+
+            scored_results.append({
+                "score": score,
+                "data": item
+            })
+
+    # SORT BY SCORE
+
+    scored_results.sort(
+        key=lambda x: x["score"],
+        reverse=True
+    )
+
+    # REMOVE DUPLICATES
+
+    unique_results = []
+
+    seen = set()
+
+    for result in scored_results:
+
+        item = result["data"]
+
+        name = item.get("name")
+
+        if name not in seen:
+
+            seen.add(name)
+
+            unique_results.append(item)
+
+    return unique_results[:top_k]
