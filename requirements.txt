@@ -1,6 +1,6 @@
 fastapi
 uvicorn
-pydantic
+sentence-transformers
 faiss-cpu
 numpy
 scikit-learn
