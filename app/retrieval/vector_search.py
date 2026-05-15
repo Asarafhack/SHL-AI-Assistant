@@ -1,6 +1,6 @@
 import json
 import pickle
-import faiss
+
 
 from sentence_transformers import SentenceTransformer
 
