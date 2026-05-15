@@ -1,0 +1,41 @@
+[
+  {
+    "name":"Automata (New)",
+    "url":"https://www.shl.com/products/product-catalog/view/automata-new/",
+    "description":"Coding simulation and programming assessment for software developers.",
+    "test_type":"Technical",
+    "skills":["Java","Programming","Coding","Developer"]
+  },
+
+  {
+    "name":"Automata - Fix (New)",
+    "url":"https://www.shl.com/products/product-catalog/view/automata-fix-new/",
+    "description":"Programming debugging and code fixing assessment.",
+    "test_type":"Technical",
+    "skills":["Java","Debugging","Programming"]
+  },
+
+  {
+    "name":"Business Communication (Adaptive)",
+    "url":"https://www.shl.com/products/product-catalog/view/business-communication-adaptive/",
+    "description":"Assessment for communication and stakeholder interaction.",
+    "test_type":"Behavioral",
+    "skills":["Communication","Stakeholder","Business"]
+  },
+
+  {
+    "name":"Occupational Personality Questionnaire (OPQ32r)",
+    "url":"https://www.shl.com/products/product-catalog/view/opq32r/",
+    "description":"Personality and workplace behavior assessment.",
+    "test_type":"Personality",
+    "skills":["Personality","Leadership","Behavior"]
+  },
+
+  {
+    "name":"General Ability Screen (GSA)",
+    "url":"https://www.shl.com/products/product-catalog/view/general-ability-screen/",
+    "description":"Cognitive ability and reasoning assessment.",
+    "test_type":"Cognitive",
+    "skills":["Reasoning","Problem Solving","Cognitive"]
+  }
+]
