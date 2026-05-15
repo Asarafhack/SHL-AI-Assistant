@@ -1,7 +1,6 @@
 fastapi
 uvicorn
 pydantic
-sentence-transformers
 faiss-cpu
 numpy
 scikit-learn
@@ -9,6 +8,3 @@ beautifulsoup4
 requests
 pytest
 python-dotenv
-huggingface_hub
-torch
-transformers
